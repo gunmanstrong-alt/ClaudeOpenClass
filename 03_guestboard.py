@@ -2,6 +2,8 @@ import asyncio
 import hashlib
 import html
 import json
+import os
+import tempfile
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -11,7 +13,11 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 app = FastAPI()
 
-DATA_FILE = Path(__file__).parent / "guestboard.json"
+# Vercel 등 서버리스 환경은 배포 코드 디렉터리가 읽기 전용이라 /tmp에만 쓸 수 있다.
+if os.environ.get("VERCEL"):
+    DATA_FILE = Path(tempfile.gettempdir()) / "guestboard.json"
+else:
+    DATA_FILE = Path(__file__).parent / "guestboard.json"
 MAX_NAME_LEN = 20
 MAX_MESSAGE_LEN = 500
 entries_lock = asyncio.Lock()
